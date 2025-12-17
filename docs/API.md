@@ -610,3 +610,252 @@ Authorization: Bearer [your_firebase_token]
 
 **Last Updated:** December 17, 2024  
 **API Version:** 1.0.0
+
+
+---
+
+## Participant Endpoints
+
+### POST /tournaments/:id/join
+Join a tournament (Player only).
+
+**Authentication:** Required (Player role)
+
+**URL Parameters:**
+- `id` - Tournament ID (UUID)
+
+**Response: 201 Created**
+```json
+{
+  "success": true,
+  "message": "Successfully joined tournament",
+  "participant": {
+    "participant_id": "uuid",
+    "tournament_id": "uuid",
+    "user_id": "uuid",
+    "joined_at": "timestamp",
+    "status": "registered"
+  },
+  "tournament": {
+    "tournament_id": "uuid",
+    "tournament_name": "string",
+    "current_players": 5,
+    "max_players": 16
+  }
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - No authentication token
+- `403 Forbidden` - User is not a player
+- `404 Not Found` - Tournament not found
+- `400 Bad Request` - Already joined, tournament full, or not upcoming
+
+---
+
+### DELETE /tournaments/:id/leave
+Leave a tournament (Player only).
+
+**Authentication:** Required (Player role)
+
+**URL Parameters:**
+- `id` - Tournament ID (UUID)
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "message": "Successfully left tournament",
+  "participant": {
+    "participant_id": "uuid",
+    "tournament_id": "uuid",
+    "user_id": "uuid",
+    "joined_at": "timestamp",
+    "status": "registered"
+  },
+  "tournament": {
+    "tournament_id": "uuid",
+    "tournament_name": "string",
+    "current_players": 4,
+    "max_players": 16
+  }
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - No authentication token
+- `404 Not Found` - Tournament not found
+- `400 Bad Request` - Not a participant or tournament not upcoming
+
+---
+
+### GET /tournaments/:id/participants
+Get all participants for a tournament (Public).
+
+**Authentication:** Not required
+
+**URL Parameters:**
+- `id` - Tournament ID (UUID)
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "count": 5,
+  "tournament": {
+    "tournament_id": "uuid",
+    "tournament_name": "Bangalore Open 2025",
+    "max_players": 16,
+    "status": "upcoming"
+  },
+  "participants": [
+    {
+      "participant_id": "uuid",
+      "tournament_id": "uuid",
+      "user_id": "uuid",
+      "joined_at": "timestamp",
+      "status": "registered",
+      "full_name": "John Doe",
+      "email": "john@example.com",
+      "contact_number": "9876543210",
+      "city": "Bangalore",
+      "skill_level": "intermediate",
+      "matches_played": 25,
+      "matches_won": 15,
+      "win_rate": 60.00
+    }
+  ]
+}
+```
+
+**Error Responses:**
+- `404 Not Found` - Tournament not found
+
+---
+
+### GET /tournaments/:id/check-participation
+Check if current user is a participant (Protected).
+
+**Authentication:** Required
+
+**URL Parameters:**
+- `id` - Tournament ID (UUID)
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "tournament_id": "uuid",
+  "user_id": "uuid",
+  "is_participant": true
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - No authentication token
+- `404 Not Found` - Tournament not found
+
+---
+
+### GET /users/:id/tournaments
+Get all tournaments a user has joined (Protected).
+
+**Authentication:** Required (Can only view own tournaments)
+
+**URL Parameters:**
+- `id` - User ID (UUID)
+
+**Query Parameters:**
+- `status` (optional) - Filter by tournament status: `upcoming`, `live`, `completed`
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "count": 3,
+  "tournaments": [
+    {
+      "tournament_id": "uuid",
+      "tournament_name": "Bangalore Open 2025",
+      "venue": "Sportz Village, Whitefield",
+      "tournament_date": "2025-01-15",
+      "match_type": "singles",
+      "format": "knockout",
+      "entry_fee": 500,
+      "prize_money": 5000,
+      "max_players": 16,
+      "current_players": 0,
+      "tournament_status": "upcoming",
+      "participant_id": "uuid",
+      "joined_at": "timestamp",
+      "participant_status": "registered",
+      "organizer_name": "Coach Rajesh",
+      "current_players_count": "5"
+    }
+  ]
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - No authentication token
+- `403 Forbidden` - Trying to view another user's tournaments
+
+---
+
+## Participant Business Rules
+
+### Join Tournament Rules
+1. **Player Only**: Only users with role "player" can join tournaments
+2. **Upcoming Only**: Can only join tournaments with status "upcoming"
+3. **No Duplicates**: Cannot join the same tournament twice
+4. **Space Available**: Tournament must not be full (current_players < max_players)
+
+### Leave Tournament Rules
+1. **Participant Only**: Can only leave if already a participant
+2. **Upcoming Only**: Can only leave tournaments with status "upcoming"
+3. **No Refunds**: Leaving does not trigger automatic refunds (handled separately)
+
+### View Participants Rules
+1. **Public Access**: Anyone can view tournament participants
+2. **Includes Stats**: Shows player statistics and win rates
+3. **Ordered by Join Time**: Participants listed in order they joined
+
+### View User Tournaments Rules
+1. **Own Tournaments Only**: Users can only view their own joined tournaments
+2. **Status Filter**: Optional filter by tournament status
+3. **Includes Details**: Shows full tournament and organizer information
+
+---
+
+## Complete Endpoint Summary
+
+### Authentication (2 endpoints)
+- POST /auth/signup - Create user account
+- POST /auth/login - Login user
+
+### User Management (3 endpoints)
+- GET /users/:id/profile - Get user profile
+- PATCH /users/:id/profile - Update user profile
+- GET /users/:id/stats - Get player statistics
+
+### Tournament Management (6 endpoints)
+- POST /tournaments - Create tournament (Organizer)
+- GET /tournaments - List tournaments with filters
+- GET /tournaments/:id - Get tournament details
+- GET /tournaments/organizer/:id - Get organizer's tournaments
+- PATCH /tournaments/:id - Update tournament (Owner)
+- DELETE /tournaments/:id - Delete tournament (Owner)
+
+### Participant Management (5 endpoints)
+- POST /tournaments/:id/join - Join tournament (Player)
+- DELETE /tournaments/:id/leave - Leave tournament (Player)
+- GET /tournaments/:id/participants - Get tournament participants
+- GET /tournaments/:id/check-participation - Check if user is participant
+- GET /users/:id/tournaments - Get user's joined tournaments
+
+### Status/Health (3 endpoints)
+- GET / - API information
+- GET /health - Health check
+- GET /api/test-auth - Test authentication
+
+**Total: 19 API Endpoints**

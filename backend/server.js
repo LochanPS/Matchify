@@ -44,11 +44,13 @@ app.get('/health', (req, res) => {
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const tournamentRoutes = require('./routes/tournaments');
+const participantRoutes = require('./routes/participants');
 
 // API Routes
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/tournaments', tournamentRoutes);
+app.use('/', participantRoutes); // Participant routes use /tournaments and /users prefixes
 
 // Test protected route
 app.get('/api/test-auth', authenticateUser, (req, res) => {

@@ -363,3 +363,99 @@
 - Complete API documentation
 - Deployment guides
 - Environment setup docs
+
+
+---
+
+## Day 6 - December 17, 2024
+
+### Planned Tasks
+- [x] Create Participant model with CRUD methods
+- [x] Create participant controller with all endpoints
+- [x] Implement join tournament endpoint (player only)
+- [x] Implement leave tournament endpoint (player only)
+- [x] Implement get participants endpoint (public)
+- [x] Implement check participation endpoint
+- [x] Implement get user tournaments endpoint
+- [x] Add comprehensive participant validation
+- [x] Create participant routes
+- [x] Update server.js with participant routes
+- [x] Create test script for participant endpoints
+- [x] Update API documentation
+
+### Completed
+- ✅ Participant model created (models/Participant.js) with methods:
+  - join, leave, isParticipant
+  - findByTournament, findByUser
+  - getCount, hasSpace
+- ✅ Participant controller created (controllers/participantController.js):
+  - joinTournament - Join tournament (player only)
+  - leaveTournament - Leave tournament (player only)
+  - getParticipants - Get tournament participants (public)
+  - checkParticipation - Check if user is participant
+  - getUserTournaments - Get user's joined tournaments
+- ✅ Participant routes created (routes/participants.js):
+  - POST /tournaments/:id/join - Join tournament
+  - DELETE /tournaments/:id/leave - Leave tournament
+  - GET /tournaments/:id/participants - Get participants
+  - GET /tournaments/:id/check-participation - Check participation
+  - GET /users/:id/tournaments - Get user's tournaments
+- ✅ Comprehensive validation:
+  - Only players can join tournaments
+  - Can only join upcoming tournaments
+  - Cannot join same tournament twice
+  - Tournament must have space available
+  - Can only leave if already participant
+  - Can only leave upcoming tournaments
+- ✅ Authorization checks:
+  - Join/leave require player role
+  - Check participation requires authentication
+  - Can only view own tournaments
+- ✅ Participant features:
+  - Shows player statistics and win rates
+  - Ordered by join time
+  - Includes tournament details
+  - Real-time participant count
+- ✅ Server.js updated with participant routes
+- ✅ Test script created (scripts/testParticipantAPIs.js)
+- ✅ API.md documentation updated with all participant endpoints
+
+### Blockers
+- None - All participant endpoints complete
+
+### Notes
+- Participant model includes space checking and duplicate prevention
+- Players can only join/leave upcoming tournaments
+- Public can view all participants with stats
+- User can check their own participation status
+- Participant count updates in real-time
+- Ready for Day 7: Match generation (knockout & league)
+
+### Time Spent
+- Participant model: 1 hour
+- Participant controller: 1.5 hours
+- Routes and validation: 45 mins
+- Testing script: 45 mins
+- API documentation: 45 mins
+- Total: 5 hours
+
+---
+
+## Week 2 Progress
+
+### Days Completed
+- [x] Day 6: Participant endpoints ✅
+
+### Days Remaining
+- [ ] Day 7: Match generation (knockout & league)
+- [ ] Day 8: Score entry and winner calculation
+- [ ] Day 9: Testing & polish
+- [ ] Day 10: Documentation & deployment prep
+
+### Current Stats
+- **API Endpoints:** 19 total (5 new participant endpoints)
+- **Models:** 4 (User, Tournament, Participant, BaseModel)
+- **Controllers:** 4 (Auth, User, Tournament, Participant)
+- **Routes:** 4 (Auth, Users, Tournaments, Participants)
+- **Lines of Code:** ~6,500+ lines
+- **Time Spent:** ~35 hours total
