@@ -40,6 +40,14 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Import routes
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
+
+// API Routes
+app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
+
 // Test protected route
 app.get('/api/test-auth', authenticateUser, (req, res) => {
   res.json({

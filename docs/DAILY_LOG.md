@@ -161,16 +161,78 @@
 
 ---
 
-## Day 4 - [Date]
+## Day 4 - December 17, 2024
 
 ### Planned Tasks
-- [ ] Create User model with CRUD methods
-- [ ] Create auth controller (signup, login)
-- [ ] Create user controller (profile, update)
-- [ ] Add input validation
-- [ ] Create auth and user routes
-- [ ] Test all endpoints with Postman
-- [ ] Update API documentation
+- [x] Create User model with CRUD methods
+- [x] Create auth controller (signup, login)
+- [x] Create user controller (profile, update, stats)
+- [x] Add input validation with express-validator
+- [x] Create auth and user routes
+- [x] Update server.js with routes
+- [x] Create test script for API endpoints
+- [x] Update comprehensive API documentation
+
+### Completed
+- ✅ User model created (models/User.js) with methods:
+  - create, findByFirebaseUid, findByEmail, findById
+  - updateProfile, getPlayerStats, getTournamentHistory
+  - updateStats for match completion
+- ✅ Auth controller created (controllers/authController.js):
+  - signup - Create user in DB after Firebase auth
+  - login - Return user data from DB
+- ✅ User controller created (controllers/userController.js):
+  - getProfile - Get user profile with stats
+  - updateProfile - Update user profile (authenticated)
+  - getPlayerStats - Get player statistics
+- ✅ Validation middleware created (middleware/validation.js):
+  - validateSignup - Validate signup data
+  - validateProfileUpdate - Validate profile updates
+  - validateLogin - Validate login data
+- ✅ Routes created:
+  - routes/auth.js - POST /auth/signup, POST /auth/login
+  - routes/users.js - GET/PATCH /users/:id/profile, GET /users/:id/stats
+- ✅ Server.js updated with route imports
+- ✅ express-validator installed for input validation
+- ✅ axios installed for testing
+- ✅ Test script created (scripts/testUserAPIs.js)
+- ✅ Comprehensive API.md documentation updated
+
+### Blockers
+- None - All user endpoints complete and ready for testing
+
+### Notes
+- All endpoints follow consistent response format
+- Validation ensures data integrity
+- Role-based field validation (player vs organizer)
+- Win rate calculated automatically for players
+- Tournament history included in player profiles
+- Protected endpoints require Firebase token
+- Test script validates endpoint behavior
+- Ready for Day 5: Tournament API endpoints
+
+### Time Spent
+- User model: 1 hour
+- Controllers (auth + user): 2 hours
+- Validation middleware: 45 mins
+- Routes and server updates: 30 mins
+- Testing script: 45 mins
+- API documentation: 1 hour
+- Total: 6 hours
+
+---
+
+## Day 5 - [Date]
+
+### Planned Tasks
+- [ ] Create Tournament model with CRUD methods
+- [ ] Create tournament controller
+- [ ] Implement create tournament endpoint
+- [ ] Implement list tournaments with filters
+- [ ] Implement tournament details endpoint
+- [ ] Add tournament validation
+- [ ] Create tournament routes
+- [ ] Test all tournament endpoints
 
 ### Completed
 - Coming soon...
