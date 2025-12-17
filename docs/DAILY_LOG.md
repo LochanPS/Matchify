@@ -570,3 +570,104 @@
 - **Utilities:** 1 (matchGenerator)
 - **Lines of Code:** ~8,500+ lines
 - **Time Spent:** ~42 hours total
+
+
+---
+
+## Day 8 - December 17, 2024
+
+### Planned Tasks
+- [x] Create score submission controller
+- [x] Implement submit score endpoint (organizer only)
+- [x] Implement score validation (no ties, non-negative)
+- [x] Implement player statistics updates
+- [x] Implement knockout winner advancement logic
+- [x] Implement tournament completion detection
+- [x] Implement leaderboard endpoint (league format)
+- [x] Create score routes
+- [x] Update server.js with score routes
+- [x] Create test script for score endpoints
+- [x] Update API documentation
+
+### Completed
+- ✅ Score controller created (controllers/scoreController.js):
+  - submitScore - Submit match score (organizer only)
+  - getLeaderboard - Get tournament leaderboard (league format)
+  - advanceWinnerInKnockout - Helper for knockout advancement
+  - checkTournamentComplete - Helper for completion detection
+- ✅ Score routes created (routes/scores.js):
+  - POST /matches/:id/score - Submit score
+  - GET /tournaments/:id/leaderboard - Get leaderboard
+- ✅ Comprehensive score validation:
+  - Both scores required
+  - Non-negative integers only
+  - No ties allowed (must have winner)
+  - Match must have both players
+  - Cannot submit for completed match
+- ✅ Player statistics updates:
+  - Winner: matches_played +1, matches_won +1
+  - Loser: matches_played +1
+  - Win rate automatically recalculated
+- ✅ Knockout advancement logic:
+  - Winner automatically advances to next round
+  - Correct bracket position calculation
+  - Handles player1/player2 slot assignment
+- ✅ Tournament completion detection:
+  - Knockout: All assigned matches completed
+  - League: All matches completed
+  - Auto-updates tournament status to "completed"
+- ✅ Leaderboard system (league format):
+  - Points: 3 per win
+  - Sorted by points, wins, total score
+  - Shows rank, stats, and standings
+- ✅ Authorization checks:
+  - Only organizers can submit scores
+  - Only tournament owner can submit
+  - Public can view leaderboard
+- ✅ Transaction safety:
+  - Atomic updates for match, stats, and advancement
+  - Rollback on errors
+- ✅ Server.js updated with score routes
+- ✅ Test script created (scripts/testScoreAPIs.js)
+- ✅ API.md documentation updated with score endpoints
+
+### Blockers
+- None - All score submission endpoints complete
+
+### Notes
+- Score submission triggers multiple updates atomically
+- Knockout advancement automatically fills next round
+- Tournament completion auto-detected and status updated
+- Leaderboard uses 3-point system (standard for leagues)
+- Ready for Day 9: Testing, polish, and bug fixes
+
+### Time Spent
+- Score controller: 2 hours
+- Knockout advancement logic: 1.5 hours
+- Leaderboard implementation: 1 hour
+- Routes and validation: 45 mins
+- Testing script: 45 mins
+- API documentation: 1 hour
+- Total: 7 hours
+
+---
+
+## Week 2 Progress
+
+### Days Completed
+- [x] Day 6: Participant endpoints ✅
+- [x] Day 7: Match generation ✅
+- [x] Day 8: Score submission ✅
+
+### Days Remaining
+- [ ] Day 9: Testing & polish
+- [ ] Day 10: Documentation & deployment prep
+
+### Current Stats
+- **API Endpoints:** 25 total (2 new score endpoints)
+- **Models:** 5 (User, Tournament, Participant, Match, BaseModel)
+- **Controllers:** 6 (Auth, User, Tournament, Participant, Match, Score)
+- **Routes:** 6 (Auth, Users, Tournaments, Participants, Matches, Scores)
+- **Utilities:** 1 (matchGenerator)
+- **Lines of Code:** ~10,000+ lines
+- **Time Spent:** ~49 hours total

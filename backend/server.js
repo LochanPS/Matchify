@@ -46,6 +46,7 @@ const userRoutes = require('./routes/users');
 const tournamentRoutes = require('./routes/tournaments');
 const participantRoutes = require('./routes/participants');
 const matchRoutes = require('./routes/matches');
+const scoreRoutes = require('./routes/scores');
 
 // API Routes
 app.use('/auth', authRoutes);
@@ -53,6 +54,7 @@ app.use('/users', userRoutes);
 app.use('/tournaments', tournamentRoutes);
 app.use('/', participantRoutes); // Participant routes use /tournaments and /users prefixes
 app.use('/', matchRoutes); // Match routes use /tournaments and /matches prefixes
+app.use('/', scoreRoutes); // Score routes use /matches and /tournaments prefixes
 
 // Test protected route
 app.get('/api/test-auth', authenticateUser, (req, res) => {

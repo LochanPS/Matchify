@@ -1178,3 +1178,236 @@ Delete all matches for a tournament (Organizer only).
 - GET /api/test-auth - Test authentication
 
 **Total: 23 API Endpoints**
+
+
+---
+
+## Score Submission Endpoints
+
+### POST /matches/:id/score
+Submit score for a match (Organizer only).
+
+**Authentication:** Required (Organizer role, tournament owner)
+
+**URL Parameters:**
+- `id` - Match ID (UUID)
+
+**Request Body:**
+```json
+{
+  "player1_score": 21,
+  "player2_score": 15
+}
+```
+
+**Validation Rules:**
+- Both scores are required
+- Scores must be non-negative integers
+- No ties allowed (scores cannot be equal)
+- Match must have both players assigned
+- Match cannot already be completed
+- Only tournament organizer can submit
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "message": "Score submitted successfully",
+  "match": {
+    "match_id": "uuid",
+    "tournament_id": "uuid",
+    "round_number": 1,
+    "match_number": 1,
+    "player1_id": "uuid",
+    "player2_id": "uuid",
+    "player1_score": 21,
+    "player2_score": 15,
+    "winner_id": "uuid",
+    "status": "completed",
+    "updated_at": "timestamp"
+  },
+  "winner_id": "uuid",
+  "tournament_complete": false
+}
+```
+
+**Effects:**
+1. Updates match with scores and winner
+2. Updates winner's stats: `matches_played +1`, `matches_won +1`
+3. Updates loser's stats: `matches_played +1`
+4. **Knockout format:** Winner advances to next round
+5. Checks if tournament is complete
+6. If complete, updates tournament status to "completed"
+
+**Error Responses:**
+- `401 Unauthorized` - No authentication token
+- `403 Forbidden` - Not organizer or not tournament owner
+- `404 Not Found` - Match not found
+- `400 Bad Request` - Invalid scores, tie, match already completed, or players not assigned
+
+---
+
+### GET /tournaments/:id/leaderboard
+Get tournament leaderboard (League format only).
+
+**Authentication:** Not required
+
+**URL Parameters:**
+- `id` - Tournament ID (UUID)
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "tournament": {
+    "tournament_id": "uuid",
+    "tournament_name": "Bangalore League 2025",
+    "format": "league",
+    "status": "live"
+  },
+  "leaderboard": [
+    {
+      "rank": 1,
+      "user_id": "uuid",
+      "full_name": "John Doe",
+      "skill_level": "advanced",
+      "matches_played": 5,
+      "wins": 4,
+      "losses": 1,
+      "points": 12,
+      "total_score": 105
+    },
+    {
+      "rank": 2,
+      "user_id": "uuid",
+      "full_name": "Jane Smith",
+      "skill_level": "intermediate",
+      "matches_played": 5,
+      "wins": 3,
+      "losses": 2,
+      "points": 9,
+      "total_score": 98
+    }
+  ]
+}
+```
+
+**Sorting Logic:**
+1. Points (3 points per win)
+2. Number of wins
+3. Total score
+
+**Error Responses:**
+- `404 Not Found` - Tournament not found
+- `400 Bad Request` - Tournament is not league format
+
+---
+
+## Score Submission Business Rules
+
+### Validation Rules
+1. **Both Scores Required**: Must provide scores for both players
+2. **Non-negative Integers**: Scores must be 0 or positive whole numbers
+3. **No Ties**: Scores cannot be equal (must have a winner)
+4. **Players Assigned**: Match must have both player1_id and player2_id
+5. **Not Completed**: Cannot submit score for already completed match
+6. **Organizer Only**: Only tournament organizer can submit scores
+
+### Player Statistics Updates
+**Winner:**
+- `matches_played` incremented by 1
+- `matches_won` incremented by 1
+- Win rate automatically recalculated
+
+**Loser:**
+- `matches_played` incremented by 1
+- Win rate automatically recalculated
+
+### Knockout Advancement Logic
+When a score is submitted for a knockout match:
+1. Winner is determined (higher score)
+2. Winner advances to next round
+3. Next round match is determined by:
+   - Match number in current round
+   - Position in bracket (player1 or player2 slot)
+4. Winner is assigned to appropriate slot in next round match
+
+**Example:**
+```
+Round 1:
+- Match 1: A vs B → Winner: A
+- Match 2: C vs D → Winner: C
+- Match 3: E vs F → Winner: E
+- Match 4: G vs H → Winner: H
+
+Round 2 (Semi Finals):
+- Match 1: A vs C (from Round 1 matches 1 & 2)
+- Match 2: E vs H (from Round 1 matches 3 & 4)
+```
+
+### Tournament Completion Detection
+
+**Knockout Format:**
+- Tournament is complete when all matches with assigned players are completed
+- Final match completion triggers tournament status change
+
+**League Format:**
+- Tournament is complete when all matches are completed
+- All players must have played all their matches
+
+### Leaderboard Calculation (League Only)
+
+**Points System:**
+- Win: 3 points
+- Loss: 0 points
+- (No draws in badminton)
+
+**Ranking Priority:**
+1. Total points (wins × 3)
+2. Number of wins
+3. Total score across all matches
+
+---
+
+## Complete Endpoint Summary
+
+### Authentication (2 endpoints)
+- POST /auth/signup - Create user account
+- POST /auth/login - Login user
+
+### User Management (3 endpoints)
+- GET /users/:id/profile - Get user profile
+- PATCH /users/:id/profile - Update user profile
+- GET /users/:id/stats - Get player statistics
+
+### Tournament Management (6 endpoints)
+- POST /tournaments - Create tournament (Organizer)
+- GET /tournaments - List tournaments with filters
+- GET /tournaments/:id - Get tournament details
+- GET /tournaments/organizer/:id - Get organizer's tournaments
+- PATCH /tournaments/:id - Update tournament (Owner)
+- DELETE /tournaments/:id - Delete tournament (Owner)
+
+### Participant Management (5 endpoints)
+- POST /tournaments/:id/join - Join tournament (Player)
+- DELETE /tournaments/:id/leave - Leave tournament (Player)
+- GET /tournaments/:id/participants - Get tournament participants
+- GET /tournaments/:id/check-participation - Check if user is participant
+- GET /users/:id/tournaments - Get user's joined tournaments
+
+### Match Management (4 endpoints)
+- POST /tournaments/:id/generate-matches - Generate matches (Organizer)
+- GET /tournaments/:id/matches - Get tournament matches
+- GET /matches/:id - Get match details
+- DELETE /tournaments/:id/matches - Delete matches (Organizer)
+
+### Score Management (2 endpoints)
+- POST /matches/:id/score - Submit match score (Organizer)
+- GET /tournaments/:id/leaderboard - Get tournament leaderboard (League)
+
+### Status/Health (3 endpoints)
+- GET / - API information
+- GET /health - Health check
+- GET /api/test-auth - Test authentication
+
+**Total: 25 API Endpoints**

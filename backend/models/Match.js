@@ -120,7 +120,7 @@ class Match extends BaseModel {
         winner_id = $3,
         status = 'completed',
         updated_at = CURRENT_TIMESTAMP
-      WHERE match_id = $1
+      WHERE match_id = $4
       RETURNING *
     `;
 
