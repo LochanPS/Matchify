@@ -43,10 +43,12 @@ app.get('/health', (req, res) => {
 // Import routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
+const tournamentRoutes = require('./routes/tournaments');
 
 // API Routes
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/tournaments', tournamentRoutes);
 
 // Test protected route
 app.get('/api/test-auth', authenticateUser, (req, res) => {

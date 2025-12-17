@@ -330,12 +330,281 @@ Import this collection to test all endpoints:
 
 ---
 
+## Tournament Endpoints
+
+### POST /tournaments
+Create a new tournament (organizer only, authenticated).
+
+**Headers:**
+```
+Authorization: Bearer [your_firebase_token]
+```
+
+**Request Body:**
+```json
+{
+  "tournament_name": "string (required, min 3 chars)",
+  "venue": "string (required)",
+  "tournament_date": "date (required, YYYY-MM-DD, today or future)",
+  "match_type": "singles | doubles (required)",
+  "format": "knockout | league (required)",
+  "entry_fee": "number (optional, default 0)",
+  "prize_money": "number (optional, default 0)",
+  "max_players": "8 | 16 | 32 (required)"
+}
+```
+
+**Response: 201 Created**
+```json
+{
+  "success": true,
+  "message": "Tournament created successfully",
+  "tournament": {
+    "tournament_id": "uuid",
+    "organizer_id": "uuid",
+    "tournament_name": "string",
+    "venue": "string",
+    "tournament_date": "date",
+    "match_type": "string",
+    "format": "string",
+    "entry_fee": 0,
+    "prize_money": 0,
+    "max_players": 16,
+    "current_players": 0,
+    "status": "upcoming",
+    "created_at": "timestamp"
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - Validation failed or missing fields
+- `401 Unauthorized` - Missing or invalid token
+- `403 Forbidden` - User is not an organizer
+- `500 Internal Server Error` - Server error
+
+---
+
+### GET /tournaments
+List all tournaments with optional filters (public endpoint).
+
+**Query Parameters:**
+- `status` - Filter by status (upcoming, live, completed) - default: upcoming
+- `city` - Filter by city (searches in venue)
+- `match_type` - Filter by match type (singles, doubles)
+- `format` - Filter by format (knockout, league)
+- `date_from` - Filter by start date (YYYY-MM-DD)
+- `date_to` - Filter by end date (YYYY-MM-DD)
+- `limit` - Number of results (default: 20)
+- `offset` - Pagination offset (default: 0)
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "count": 10,
+  "limit": 20,
+  "offset": 0,
+  "tournaments": [
+    {
+      "tournament_id": "uuid",
+      "organizer_id": "uuid",
+      "tournament_name": "string",
+      "venue": "string",
+      "tournament_date": "date",
+      "match_type": "string",
+      "format": "string",
+      "entry_fee": 0,
+      "prize_money": 0,
+      "max_players": 16,
+      "current_players": 5,
+      "status": "upcoming",
+      "organizer_name": "string",
+      "current_players_count": "5",
+      "created_at": "timestamp"
+    }
+  ]
+}
+```
+
+**Error Responses:**
+- `500 Internal Server Error` - Server error
+
+---
+
+### GET /tournaments/:id
+Get tournament details by ID (public endpoint).
+
+**URL Parameters:**
+- `id` - Tournament ID (UUID)
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "tournament": {
+    "tournament_id": "uuid",
+    "organizer_id": "uuid",
+    "tournament_name": "string",
+    "venue": "string",
+    "tournament_date": "date",
+    "match_type": "string",
+    "format": "string",
+    "entry_fee": 0,
+    "prize_money": 0,
+    "max_players": 16,
+    "current_players": 5,
+    "status": "upcoming",
+    "organizer_name": "string",
+    "organizer_email": "string",
+    "organizer_contact": "string",
+    "current_players_count": "5",
+    "created_at": "timestamp"
+  }
+}
+```
+
+**Error Responses:**
+- `404 Not Found` - Tournament not found
+- `500 Internal Server Error` - Server error
+
+---
+
+### GET /tournaments/organizer/:id
+Get all tournaments by organizer (authenticated, can only view own tournaments).
+
+**URL Parameters:**
+- `id` - Organizer user ID (UUID)
+
+**Headers:**
+```
+Authorization: Bearer [your_firebase_token]
+```
+
+**Query Parameters:**
+- `status` - Filter by status (optional)
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "count": 5,
+  "tournaments": [
+    {
+      "tournament_id": "uuid",
+      "tournament_name": "string",
+      "venue": "string",
+      "tournament_date": "date",
+      "status": "upcoming",
+      "current_players_count": "5",
+      "total_matches": "0",
+      "max_players": 16,
+      "created_at": "timestamp"
+    }
+  ]
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - Missing or invalid token
+- `403 Forbidden` - Can only view own tournaments
+- `500 Internal Server Error` - Server error
+
+---
+
+### PATCH /tournaments/:id
+Update tournament (authenticated, organizer only, upcoming tournaments only).
+
+**URL Parameters:**
+- `id` - Tournament ID (UUID)
+
+**Headers:**
+```
+Authorization: Bearer [your_firebase_token]
+```
+
+**Request Body:**
+```json
+{
+  "tournament_name": "string (optional)",
+  "venue": "string (optional)",
+  "tournament_date": "date (optional, YYYY-MM-DD)",
+  "match_type": "singles | doubles (optional)",
+  "format": "knockout | league (optional)",
+  "entry_fee": "number (optional)",
+  "prize_money": "number (optional)",
+  "max_players": "8 | 16 | 32 (optional)"
+}
+```
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "message": "Tournament updated successfully",
+  "tournament": {
+    "tournament_id": "uuid",
+    "tournament_name": "string",
+    "venue": "string",
+    "tournament_date": "date",
+    "match_type": "string",
+    "format": "string",
+    "entry_fee": 0,
+    "prize_money": 0,
+    "max_players": 16,
+    "current_players": 5,
+    "status": "upcoming",
+    "created_at": "timestamp"
+  }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request` - Validation failed or no fields to update
+- `401 Unauthorized` - Missing or invalid token
+- `403 Forbidden` - Can only edit own upcoming tournaments
+- `404 Not Found` - Tournament not found
+- `500 Internal Server Error` - Server error
+
+---
+
+### DELETE /tournaments/:id
+Delete tournament (authenticated, organizer only, upcoming tournaments only).
+
+**URL Parameters:**
+- `id` - Tournament ID (UUID)
+
+**Headers:**
+```
+Authorization: Bearer [your_firebase_token]
+```
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "message": "Tournament deleted successfully",
+  "tournament": {
+    "tournament_id": "uuid",
+    "tournament_name": "string"
+  }
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - Missing or invalid token
+- `403 Forbidden` - Can only delete own upcoming tournaments
+- `404 Not Found` - Tournament not found
+- `500 Internal Server Error` - Server error
+
+---
+
 ## Coming Soon
 
-- Tournament endpoints (Day 5)
 - Match endpoints (Week 2)
 - Participant endpoints (Week 2)
-- Search and filtering (Week 2)
+- Match generation (Week 2)
+- Score entry (Week 2)
 
 ---
 
