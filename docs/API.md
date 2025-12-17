@@ -859,3 +859,322 @@ Get all tournaments a user has joined (Protected).
 - GET /api/test-auth - Test authentication
 
 **Total: 19 API Endpoints**
+
+
+---
+
+## Match Endpoints
+
+### POST /tournaments/:id/generate-matches
+Generate matches for a tournament (Organizer only).
+
+**Authentication:** Required (Organizer role, tournament owner)
+
+**URL Parameters:**
+- `id` - Tournament ID (UUID)
+
+**Business Rules:**
+- Tournament must be in "upcoming" status
+- Must have correct number of participants:
+  - Knockout: Power of 2 (8, 16, 32)
+  - League: 3-16 participants
+- Matches cannot already exist
+- Only tournament organizer can generate
+
+**Response: 201 Created**
+```json
+{
+  "success": true,
+  "message": "Matches generated successfully",
+  "tournament": {
+    "tournament_id": "uuid",
+    "status": "live",
+    "...": "other tournament fields"
+  },
+  "statistics": {
+    "total_participants": 16,
+    "total_matches": 15,
+    "total_rounds": 4,
+    "format": "knockout",
+    "matches_created": 15
+  },
+  "matches": [
+    {
+      "match_id": "uuid",
+      "tournament_id": "uuid",
+      "round_number": 1,
+      "match_number": 1,
+      "player1_id": "uuid",
+      "player2_id": "uuid",
+      "player1_score": null,
+      "player2_score": null,
+      "winner_id": null,
+      "status": "pending",
+      "scheduled_time": null,
+      "created_at": "timestamp"
+    }
+  ]
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - No authentication token
+- `403 Forbidden` - Not organizer or not tournament owner
+- `404 Not Found` - Tournament not found
+- `400 Bad Request` - Invalid participant count, matches already exist, or tournament not upcoming
+
+---
+
+### GET /tournaments/:id/matches
+Get all matches for a tournament (Public).
+
+**Authentication:** Not required
+
+**URL Parameters:**
+- `id` - Tournament ID (UUID)
+
+**Query Parameters:**
+- `round` (optional) - Filter by round number (integer)
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "tournament": {
+    "tournament_id": "uuid",
+    "tournament_name": "Bangalore Open 2025",
+    "format": "knockout",
+    "status": "live"
+  },
+  "total_matches": 15,
+  "rounds": [
+    {
+      "round_number": 1,
+      "round_name": "Round 1",
+      "matches": [
+        {
+          "match_id": "uuid",
+          "tournament_id": "uuid",
+          "round_number": 1,
+          "match_number": 1,
+          "player1_id": "uuid",
+          "player1_name": "John Doe",
+          "player1_skill": "intermediate",
+          "player2_id": "uuid",
+          "player2_name": "Jane Smith",
+          "player2_skill": "advanced",
+          "player1_score": null,
+          "player2_score": null,
+          "winner_id": null,
+          "winner_name": null,
+          "status": "pending",
+          "scheduled_time": null,
+          "created_at": "timestamp"
+        }
+      ]
+    },
+    {
+      "round_number": 2,
+      "round_name": "Quarter Finals",
+      "matches": []
+    }
+  ]
+}
+```
+
+**Error Responses:**
+- `404 Not Found` - Tournament not found
+
+---
+
+### GET /matches/:id
+Get match details by ID (Public).
+
+**Authentication:** Not required
+
+**URL Parameters:**
+- `id` - Match ID (UUID)
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "match": {
+    "match_id": "uuid",
+    "tournament_id": "uuid",
+    "tournament_name": "Bangalore Open 2025",
+    "format": "knockout",
+    "round_number": 1,
+    "match_number": 1,
+    "player1_id": "uuid",
+    "player1_name": "John Doe",
+    "player1_email": "john@example.com",
+    "player1_skill": "intermediate",
+    "player2_id": "uuid",
+    "player2_name": "Jane Smith",
+    "player2_email": "jane@example.com",
+    "player2_skill": "advanced",
+    "player1_score": null,
+    "player2_score": null,
+    "winner_id": null,
+    "winner_name": null,
+    "status": "pending",
+    "scheduled_time": null,
+    "created_at": "timestamp",
+    "updated_at": "timestamp"
+  }
+}
+```
+
+**Error Responses:**
+- `404 Not Found` - Match not found
+
+---
+
+### DELETE /tournaments/:id/matches
+Delete all matches for a tournament (Organizer only).
+
+**Authentication:** Required (Organizer role, tournament owner)
+
+**URL Parameters:**
+- `id` - Tournament ID (UUID)
+
+**Business Rules:**
+- Only tournament organizer can delete
+- Cannot delete matches for completed tournaments
+- Tournament status reverts to "upcoming"
+- Useful for regenerating matches with different participants
+
+**Response: 200 OK**
+```json
+{
+  "success": true,
+  "message": "Matches deleted successfully",
+  "deleted_count": 15
+}
+```
+
+**Error Responses:**
+- `401 Unauthorized` - No authentication token
+- `403 Forbidden` - Not organizer or not tournament owner
+- `404 Not Found` - Tournament not found
+- `400 Bad Request` - Tournament is completed
+
+---
+
+## Match Generation Logic
+
+### Knockout Format
+
+**Requirements:**
+- Participant count must be power of 2 (8, 16, 32)
+- Minimum 4 participants
+
+**Algorithm:**
+1. Shuffle participants randomly
+2. Generate first round with all participants
+3. Create placeholder matches for subsequent rounds
+4. Winners advance to next round (filled after match completion)
+
+**Round Names:**
+- 32 players: Round 1 → Round of 16 → Quarter Finals → Semi Finals → Finals
+- 16 players: Round 1 → Quarter Finals → Semi Finals → Finals
+- 8 players: Round 1 → Semi Finals → Finals
+
+**Total Matches:** n - 1 (where n = number of participants)
+
+**Example (8 players):**
+- Round 1: 4 matches (8 players)
+- Round 2 (Semi Finals): 2 matches (4 winners)
+- Round 3 (Finals): 1 match (2 winners)
+- Total: 7 matches
+
+---
+
+### League Format
+
+**Requirements:**
+- Minimum 3 participants
+- Maximum 16 participants
+
+**Algorithm:**
+1. Shuffle participants randomly
+2. Generate all possible pairings (round-robin)
+3. Each player plays every other player once
+
+**Total Matches:** n × (n - 1) / 2 (where n = number of participants)
+
+**Example (4 players: A, B, C, D):**
+- Match 1: A vs B
+- Match 2: A vs C
+- Match 3: A vs D
+- Match 4: B vs C
+- Match 5: B vs D
+- Match 6: C vs D
+- Total: 6 matches
+
+---
+
+## Match Business Rules
+
+### Generation Rules
+1. **Organizer Only**: Only tournament organizers can generate matches
+2. **Owner Only**: Can only generate for own tournaments
+3. **Upcoming Only**: Tournament must be in "upcoming" status
+4. **Correct Count**: Must have valid number of participants for format
+5. **No Duplicates**: Cannot generate if matches already exist
+6. **Status Update**: Tournament status changes to "live" after generation
+
+### Deletion Rules
+1. **Organizer Only**: Only tournament organizers can delete matches
+2. **Owner Only**: Can only delete for own tournaments
+3. **Not Completed**: Cannot delete matches for completed tournaments
+4. **Status Revert**: Tournament status reverts to "upcoming" after deletion
+5. **Regeneration**: Allows regenerating matches with updated participants
+
+### Viewing Rules
+1. **Public Access**: Anyone can view tournament matches
+2. **Round Filtering**: Optional filter by round number
+3. **Grouped Display**: Matches grouped by round with names
+4. **Player Details**: Includes player names and skill levels
+
+---
+
+## Complete Endpoint Summary
+
+### Authentication (2 endpoints)
+- POST /auth/signup - Create user account
+- POST /auth/login - Login user
+
+### User Management (3 endpoints)
+- GET /users/:id/profile - Get user profile
+- PATCH /users/:id/profile - Update user profile
+- GET /users/:id/stats - Get player statistics
+
+### Tournament Management (6 endpoints)
+- POST /tournaments - Create tournament (Organizer)
+- GET /tournaments - List tournaments with filters
+- GET /tournaments/:id - Get tournament details
+- GET /tournaments/organizer/:id - Get organizer's tournaments
+- PATCH /tournaments/:id - Update tournament (Owner)
+- DELETE /tournaments/:id - Delete tournament (Owner)
+
+### Participant Management (5 endpoints)
+- POST /tournaments/:id/join - Join tournament (Player)
+- DELETE /tournaments/:id/leave - Leave tournament (Player)
+- GET /tournaments/:id/participants - Get tournament participants
+- GET /tournaments/:id/check-participation - Check if user is participant
+- GET /users/:id/tournaments - Get user's joined tournaments
+
+### Match Management (4 endpoints)
+- POST /tournaments/:id/generate-matches - Generate matches (Organizer)
+- GET /tournaments/:id/matches - Get tournament matches
+- GET /matches/:id - Get match details
+- DELETE /tournaments/:id/matches - Delete matches (Organizer)
+
+### Status/Health (3 endpoints)
+- GET / - API information
+- GET /health - Health check
+- GET /api/test-auth - Test authentication
+
+**Total: 23 API Endpoints**
