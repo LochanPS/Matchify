@@ -1,18 +1,18 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Trophy, User, LogOut } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
 
-  // TODO: Get from auth context
-  const userRole = 'player'; // or 'organizer'
+  const userRole = user?.role || 'player';
 
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    // TODO: Implement logout
-    console.log('Logout clicked');
+    logout();
     navigate('/login');
   };
 

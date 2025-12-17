@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import Layout from './components/layout/Layout';
 
 // Auth pages
@@ -18,30 +19,32 @@ import TournamentManagement from './pages/organizer/TournamentManagement';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/onboarding" element={<PlayerOnboarding />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/onboarding" element={<PlayerOnboarding />} />
 
-        {/* Protected routes with layout */}
-        <Route element={<Layout />}>
-          {/* Player routes */}
-          <Route path="/" element={<TournamentList />} />
-          <Route path="/tournaments/:id" element={<TournamentDetails />} />
-          <Route path="/profile" element={<PlayerProfile />} />
+          {/* Protected routes with layout */}
+          <Route element={<Layout />}>
+            {/* Player routes */}
+            <Route path="/" element={<TournamentList />} />
+            <Route path="/tournaments/:id" element={<TournamentDetails />} />
+            <Route path="/profile" element={<PlayerProfile />} />
 
-          {/* Organizer routes */}
-          <Route path="/organizer/dashboard" element={<OrganizerDashboard />} />
-          <Route path="/organizer/tournaments/create" element={<CreateTournament />} />
-          <Route path="/organizer/tournaments/:id/manage" element={<TournamentManagement />} />
-        </Route>
+            {/* Organizer routes */}
+            <Route path="/organizer/dashboard" element={<OrganizerDashboard />} />
+            <Route path="/organizer/tournaments/create" element={<CreateTournament />} />
+            <Route path="/organizer/tournaments/:id/manage" element={<TournamentManagement />} />
+          </Route>
 
-        {/* Catch all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+          {/* Catch all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
