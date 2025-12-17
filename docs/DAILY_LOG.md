@@ -108,15 +108,69 @@
 
 ---
 
-## Day 3 - [Date]
+## Day 3 - December 17, 2024
 
 ### Planned Tasks
-- [ ] Create Firebase project
-- [ ] Enable Email/Password authentication
-- [ ] Configure Firebase Admin SDK in backend
-- [ ] Configure Firebase Client SDK in frontend
-- [ ] Create authentication middleware
-- [ ] Test authentication flow
+- [x] Install Firebase Admin SDK in backend
+- [x] Create Firebase configuration file
+- [x] Create authentication middleware
+- [x] Install Firebase Client SDK in frontend
+- [x] Create Firebase auth helper functions
+- [x] Create test UI for authentication
+- [x] Update server with protected route
+- [x] Create comprehensive setup documentation
+
+### Completed
+- ✅ Firebase Admin SDK installed (firebase-admin)
+- ✅ Backend Firebase config created (config/firebase.js)
+- ✅ Authentication middleware created (middleware/auth.js)
+  - authenticateUser - Verify tokens and load user from DB
+  - requireOrganizer - Check organizer role
+  - requirePlayer - Check player role
+  - optionalAuth - Optional authentication
+- ✅ Firebase Client SDK installed in frontend
+- ✅ Frontend Firebase config created (firebase/config.js)
+- ✅ Auth helper functions created (firebase/auth.js)
+  - signUp, signIn, logOut
+  - getIdToken, getCurrentUser
+  - onAuthChange, isAuthenticated
+- ✅ Test UI created in App.jsx
+- ✅ Protected test route added (/api/test-auth)
+- ✅ Environment files configured (.env, .env.example)
+- ✅ .gitignore updated for Firebase credentials
+- ✅ Comprehensive FIREBASE_SETUP.md guide created
+
+### Blockers
+- None - Firebase setup complete, ready for manual configuration
+
+### Notes
+- Firebase requires manual setup in console (project creation, credentials)
+- Service account JSON must be downloaded and placed in backend/
+- Frontend .env must be configured with Firebase web app credentials
+- Test UI allows testing full auth flow without API endpoints
+- Protected route verifies token and returns user from database
+- Ready for Day 4: User API endpoints (signup, login, profile)
+
+### Time Spent
+- Firebase Admin SDK setup: 45 mins
+- Authentication middleware: 1 hour
+- Frontend Firebase setup: 1 hour
+- Test UI creation: 45 mins
+- Documentation: 45 mins
+- Total: 4 hours
+
+---
+
+## Day 4 - [Date]
+
+### Planned Tasks
+- [ ] Create User model with CRUD methods
+- [ ] Create auth controller (signup, login)
+- [ ] Create user controller (profile, update)
+- [ ] Add input validation
+- [ ] Create auth and user routes
+- [ ] Test all endpoints with Postman
+- [ ] Update API documentation
 
 ### Completed
 - Coming soon...

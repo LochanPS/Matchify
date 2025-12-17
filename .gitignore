@@ -31,8 +31,10 @@ build/
 *.tsbuildinfo
 
 # Firebase
-config/serviceAccountKey.json
+backend/firebase-service-account.json
+backend/config/serviceAccountKey.json
 firebase-debug.log
+.firebase/
 
 # Database
 *.sql.backup
