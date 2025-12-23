@@ -33,11 +33,6 @@ exports.validateSignup = [
     .isIn(['player', 'organizer'])
     .withMessage('Role must be either "player" or "organizer"'),
   
-  body('skill_level')
-    .if(body('role').equals('player'))
-    .isIn(['beginner', 'intermediate', 'advanced'])
-    .withMessage('Skill level must be beginner, intermediate, or advanced for players'),
-  
   body('organizer_contact')
     .if(body('role').equals('organizer'))
     .matches(/^[6-9]\d{9}$/)
@@ -61,11 +56,6 @@ exports.validateProfileUpdate = [
     .trim()
     .isLength({ min: 2, max: 100 })
     .withMessage('City must be between 2 and 100 characters'),
-  
-  body('skill_level')
-    .optional()
-    .isIn(['beginner', 'intermediate', 'advanced'])
-    .withMessage('Skill level must be beginner, intermediate, or advanced'),
   
   body('organizer_contact')
     .optional()

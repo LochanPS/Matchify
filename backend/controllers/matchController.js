@@ -367,3 +367,8 @@ exports.deleteMatches = async (req, res) => {
     });
   }
 };
+
+
+/**
+ * PATCH /matches/:id/score
+ * Submit match score (

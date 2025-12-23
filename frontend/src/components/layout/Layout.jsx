@@ -1,90 +1,38 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Home, Trophy, User, LogOut } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { Outlet } from 'react-router-dom';
+import BottomNav from './BottomNav';
 
 const Layout = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, logout } = useAuth();
-
-  const userRole = user?.role || 'player';
-
-  const isActive = (path) => location.pathname === path;
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Top Navigation */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center justify-between px-4">
-          <h1 className="text-xl font-bold text-primary">Pathfinder</h1>
-          <button
-            onClick={handleLogout}
-            className="touch-target tap-highlight-none"
-            aria-label="Logout"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header with MATCHIFY Branding */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="px-4 py-3 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-blue-600">
+            MATCHIFY
+          </h1>
+          <div className="text-xs text-gray-500">
+            Tournament Platform
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 container px-4 py-6">
+      <main className="flex-1 pb-20">
         <Outlet />
       </main>
 
-      {/* Bottom Navigation - Mobile Only */}
-      <nav className="sticky bottom-0 z-50 w-full border-t bg-background md:hidden">
-        <div className="container flex h-16 items-center justify-around px-4">
-          {userRole === 'player' ? (
-            <>
-              <button
-                onClick={() => navigate('/')}
-                className={`flex flex-col items-center gap-1 touch-target tap-highlight-none ${
-                  isActive('/') ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                <Home className="h-5 w-5" />
-                <span className="text-xs">Home</span>
-              </button>
-              <button
-                onClick={() => navigate('/profile')}
-                className={`flex flex-col items-center gap-1 touch-target tap-highlight-none ${
-                  isActive('/profile') ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                <User className="h-5 w-5" />
-                <span className="text-xs">Profile</span>
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => navigate('/organizer/dashboard')}
-                className={`flex flex-col items-center gap-1 touch-target tap-highlight-none ${
-                  isActive('/organizer/dashboard') ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                <Trophy className="h-5 w-5" />
-                <span className="text-xs">Dashboard</span>
-              </button>
-              <button
-                onClick={() => navigate('/profile')}
-                className={`flex flex-col items-center gap-1 touch-target tap-highlight-none ${
-                  isActive('/profile') ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                <User className="h-5 w-5" />
-                <span className="text-xs">Profile</span>
-              </button>
-            </>
-          )}
-        </div>
-      </nav>
+      {/* Bottom Navigation */}
+      <BottomNav />
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-4 text-center border-t border-gray-800">
+        <p className="text-sm">
+          © 2025 MATCHIFY. All rights reserved.
+        </p>
+        <p className="text-xs text-gray-400 mt-1">
+          Making sports tournaments accessible to everyone
+        </p>
+      </footer>
     </div>
   );
 };

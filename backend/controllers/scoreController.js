@@ -208,20 +208,30 @@ exports.getLeaderboard = async (req, res) => {
       SELECT 
         u.user_id,
         u.full_name,
-        u.skill_level,
-        COUNT(m.match_id) as matches_played,
-        SUM(CASE WHEN m.winner_id = u.user_id THEN 1 ELSE 0 END) as wins,
-        SUM(CASE WHEN m.winner_id != u.user_id AND m.winner_id IS NOT NULL THEN 1 ELSE 0 END) as losses,
+        u.matches_played as total_matches_played,
+        u.wins as total_wins,
+        u.losses as total_losses,
+        COUNT(m.match_id) as tournament_matches_played,
+        SUM(CASE WHEN m.winner_id = u.user_id THEN 1 ELSE 0 END) as tournament_wins,
+        SUM(CASE WHEN m.winner_id != u.user_id AND m.winner_id IS NOT NULL THEN 1 ELSE 0 END) as tournament_losses,
         SUM(CASE WHEN m.winner_id = u.user_id THEN 3 ELSE 0 END) as points,
-        SUM(CASE WHEN m.player1_id = u.user_id THEN m.player1_score ELSE m.player2_score END) as total_score
+        SUM(CASE WHEN m.player1_id = u.user_id THEN m.player1_score ELSE m.player2_score END) as total_score,
+        -- Experience level based on objective data
+        CASE 
+          WHEN u.matches_played = 0 THEN 'New to tournaments'
+          WHEN u.matches_played < 5 THEN 'Getting started'
+          WHEN u.matches_played < 20 THEN 'Active player'
+          WHEN u.matches_played < 50 THEN 'Tournament regular'
+          ELSE 'Veteran player'
+        END as experience_level
       FROM participants p
       JOIN users u ON p.user_id = u.user_id
       LEFT JOIN matches m ON (m.player1_id = u.user_id OR m.player2_id = u.user_id) 
         AND m.tournament_id = p.tournament_id
         AND m.status = 'completed'
       WHERE p.tournament_id = $1
-      GROUP BY u.user_id, u.full_name, u.skill_level
-      ORDER BY points DESC, wins DESC, total_score DESC
+      GROUP BY u.user_id, u.full_name, u.matches_played, u.wins, u.losses
+      ORDER BY points DESC, tournament_wins DESC, total_score DESC
     `;
 
     const result = await pool.query(query, [tournamentId]);
@@ -238,10 +248,13 @@ exports.getLeaderboard = async (req, res) => {
         rank: index + 1,
         user_id: row.user_id,
         full_name: row.full_name,
-        skill_level: row.skill_level,
-        matches_played: parseInt(row.matches_played),
-        wins: parseInt(row.wins),
-        losses: parseInt(row.losses),
+        experience_level: row.experience_level,
+        total_matches_played: parseInt(row.total_matches_played),
+        total_wins: parseInt(row.total_wins),
+        total_losses: parseInt(row.total_losses),
+        tournament_matches_played: parseInt(row.tournament_matches_played),
+        tournament_wins: parseInt(row.tournament_wins),
+        tournament_losses: parseInt(row.tournament_losses),
         points: parseInt(row.points),
         total_score: parseInt(row.total_score)
       }))

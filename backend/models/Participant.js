@@ -84,14 +84,25 @@ class Participant extends BaseModel {
         u.email,
         u.contact_number,
         u.city,
-        u.skill_level,
         u.matches_played,
         u.matches_won,
+        u.losses,
+        u.total_tournaments,
+        u.current_streak,
+        u.best_streak,
         CASE 
           WHEN u.matches_played > 0 
           THEN ROUND((u.matches_won::numeric / u.matches_played::numeric) * 100, 2)
           ELSE 0
-        END as win_rate
+        END as win_rate,
+        -- Experience level based on objective data
+        CASE 
+          WHEN u.matches_played = 0 THEN 'New to tournaments'
+          WHEN u.matches_played < 5 THEN 'Getting started'
+          WHEN u.matches_played < 20 THEN 'Active player'
+          WHEN u.matches_played < 50 THEN 'Tournament regular'
+          ELSE 'Veteran player'
+        END as experience_level
       FROM participants p
       JOIN users u ON p.user_id = u.user_id
       WHERE p.tournament_id = $1

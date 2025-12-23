@@ -80,6 +80,27 @@ function requireOrganizer(req, res, next) {
 }
 
 /**
+ * Middleware to check if user is an admin
+ */
+function requireAdmin(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      message: 'Authentication required'
+    });
+  }
+  
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. Admin role required.'
+    });
+  }
+  
+  next();
+}
+
+/**
  * Middleware to check if user is a player
  */
 function requirePlayer(req, res, next) {
@@ -141,5 +162,6 @@ module.exports = {
   authenticateUser,
   requireOrganizer,
   requirePlayer,
+  requireAdmin,
   optionalAuth
 };

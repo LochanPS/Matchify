@@ -43,7 +43,7 @@ function logSection(message) {
 }
 
 async function comprehensiveTest() {
-  console.log(`${colors.blue}\n🧪 Pathfinder Enhanced - Comprehensive API Test Suite\n${colors.reset}`);
+  console.log(`${colors.blue}\n🧪 MATCHIFY - Comprehensive API Test Suite\n${colors.reset}`);
 
   try {
     // Test 1: Health Check

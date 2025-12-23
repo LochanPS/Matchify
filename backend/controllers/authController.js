@@ -7,7 +7,7 @@ const { verifyIdToken, createUser: createFirebaseUser } = require('../config/fir
  */
 exports.signup = async (req, res) => {
   try {
-    const { idToken, name, city, role, skill_level, organizer_contact } = req.body;
+    const { idToken, name, city, role, organizer_contact } = req.body;
 
     // Verify Firebase token
     const tokenResult = await verifyIdToken(idToken);
@@ -33,13 +33,6 @@ exports.signup = async (req, res) => {
     }
 
     // Validate role-specific fields
-    if (role === 'player' && !skill_level) {
-      return res.status(400).json({
-        success: false,
-        message: 'Skill level is required for players'
-      });
-    }
-
     if (role === 'organizer' && !organizer_contact) {
       return res.status(400).json({
         success: false,
@@ -54,7 +47,6 @@ exports.signup = async (req, res) => {
       email,
       city: city.trim(),
       role,
-      skill_level: role === 'player' ? skill_level : null,
       organizer_contact: role === 'organizer' ? organizer_contact : null
     });
 

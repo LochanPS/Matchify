@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const tournamentController = require('../controllers/tournamentController');
 const { authenticateUser, requireOrganizer } = require('../middleware/auth');
+const { upload, handleUploadError } = require('../middleware/uploadMiddleware');
+const { uploadPoster } = require('../controllers/posterController');
 
 /**
  * Public routes
@@ -32,5 +34,8 @@ router.delete('/:id', authenticateUser, requireOrganizer, tournamentController.d
 
 // GET /organizers/:id/tournaments - Get organizer's tournaments
 router.get('/organizer/:id', authenticateUser, tournamentController.getOrganizerTournaments);
+
+// POST /tournaments/:id/upload-poster - Upload tournament poster
+router.post('/:id/upload-poster', authenticateUser, requireOrganizer, upload.single('file'), handleUploadError, uploadPoster);
 
 module.exports = router;

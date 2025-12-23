@@ -41,8 +41,19 @@ const Login = () => {
     }
 
     try {
-      await login(formData.email, formData.password);
-      navigate('/');
+      const userData = await login(formData.email, formData.password);
+      
+      // Store token in localStorage
+      if (userData.token) {
+        localStorage.setItem('authToken', userData.token);
+      }
+      
+      // Redirect based on onboarding status
+      if (userData.role === 'player' && !userData.onboarded) {
+        navigate('/onboarding');
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       setApiError(error.message || 'Failed to login');
     }
@@ -57,7 +68,7 @@ const Login = () => {
             <User className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-          <p className="text-gray-500">Login to continue to Pathfinder Enhanced</p>
+          <p className="text-gray-500">Login to continue to MATCHIFY</p>
         </div>
 
         {/* Form */}

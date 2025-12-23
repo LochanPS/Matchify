@@ -20,11 +20,39 @@ exports.getProfile = async (req, res) => {
     // Remove sensitive data
     const { firebase_uid, ...profile } = user;
 
-    // Calculate win rate for players
+    // Calculate win rate and additional stats for players
     if (user.role === 'player') {
       profile.win_rate = user.matches_played > 0
         ? ((user.wins / user.matches_played) * 100).toFixed(1)
         : '0.0';
+      
+      profile.loss_rate = user.matches_played > 0
+        ? ((user.losses / user.matches_played) * 100).toFixed(1)
+        : '0.0';
+
+      // Calculate member since date
+      if (user.created_at) {
+        profile.member_since = new Date(user.created_at).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long'
+        });
+      }
+
+      // Calculate activity status
+      if (user.last_active_date) {
+        const daysSinceActive = Math.floor((new Date() - new Date(user.last_active_date)) / (1000 * 60 * 60 * 24));
+        if (daysSinceActive <= 7) {
+          profile.activity_status = 'Very Active';
+        } else if (daysSinceActive <= 30) {
+          profile.activity_status = 'Active';
+        } else if (daysSinceActive <= 90) {
+          profile.activity_status = 'Moderately Active';
+        } else {
+          profile.activity_status = 'Inactive';
+        }
+      } else {
+        profile.activity_status = 'New Player';
+      }
       
       // Get tournament history
       const tournamentHistory = await User.getTournamentHistory(id);
@@ -52,7 +80,7 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, city, skill_level, organizer_contact } = req.body;
+    const { name, city, phone_number, bio, organizer_contact } = req.body;
 
     // Verify user owns this profile
     if (req.user.user_id !== id) {
@@ -66,12 +94,10 @@ exports.updateProfile = async (req, res) => {
     const updates = {};
     if (name !== undefined) updates.name = name.trim();
     if (city !== undefined) updates.city = city.trim();
+    if (phone_number !== undefined) updates.phone_number = phone_number.trim();
+    if (bio !== undefined) updates.bio = bio.trim();
     
     // Role-specific updates
-    if (req.user.role === 'player' && skill_level !== undefined) {
-      updates.skill_level = skill_level;
-    }
-    
     if (req.user.role === 'organizer' && organizer_contact !== undefined) {
       updates.organizer_contact = organizer_contact;
     }

@@ -9,13 +9,13 @@ class User extends BaseModel {
   /**
    * Create a new user
    */
-  async create({ firebase_uid, name, email, city, role, skill_level, organizer_contact }) {
+  async create({ firebase_uid, name, email, city, role, organizer_contact }) {
     const query = `
-      INSERT INTO users (firebase_uid, name, email, city, role, skill_level, organizer_contact)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO users (firebase_uid, name, email, city, role, organizer_contact)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
-    const values = [firebase_uid, name, email, city, role, skill_level, organizer_contact];
+    const values = [firebase_uid, name, email, city, role, organizer_contact];
     const result = await db.query(query, values);
     return result.rows[0];
   }
@@ -51,7 +51,7 @@ class User extends BaseModel {
    * Update user profile
    */
   async updateProfile(user_id, updates) {
-    const allowedFields = ['name', 'city', 'skill_level', 'organizer_contact'];
+    const allowedFields = ['name', 'city', 'organizer_contact'];
     const filteredUpdates = {};
     
     Object.keys(updates).forEach(key => {
@@ -82,13 +82,35 @@ class User extends BaseModel {
         name,
         email,
         city,
-        skill_level,
         matches_played,
         wins,
+        losses,
+        total_tournaments,
+        tournaments_won,
+        current_streak,
+        best_streak,
+        first_tournament_date,
+        last_active_date,
+        activity_streak,
         CASE 
           WHEN matches_played > 0 THEN ROUND((wins::numeric / matches_played::numeric) * 100, 2)
           ELSE 0
-        END as win_rate
+        END as win_rate,
+        -- Experience level based on objective data
+        CASE 
+          WHEN matches_played = 0 THEN 'New to tournaments'
+          WHEN matches_played < 5 THEN 'Getting started'
+          WHEN matches_played < 20 THEN 'Active player'
+          WHEN matches_played < 50 THEN 'Tournament regular'
+          ELSE 'Veteran player'
+        END as experience_level,
+        -- Activity status
+        CASE 
+          WHEN last_active_date IS NULL THEN 'Never played'
+          WHEN last_active_date >= CURRENT_DATE - INTERVAL '30 days' THEN 'Recently active'
+          WHEN last_active_date >= CURRENT_DATE - INTERVAL '90 days' THEN 'Moderately active'
+          ELSE 'Inactive'
+        END as activity_status
       FROM users
       WHERE user_id = $1 AND role = 'player'
     `;

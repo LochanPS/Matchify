@@ -1,0 +1,126 @@
+========================================
+  MATCHIFY - PostgreSQL Installation
+  Quick Checklist
+========================================
+
+STEP 1: DOWNLOAD POSTGRESQL
+----------------------------
+[ ] Browser opened to download page
+[ ] Download PostgreSQL 16.x for Windows x86-64
+[ ] Wait for download to complete (~300MB)
+
+STEP 2: INSTALL POSTGRESQL
+----------------------------
+[ ] Run the .exe installer
+[ ] Keep default installation directory
+[ ] Select all components (especially Command Line Tools)
+[ ] Set password: postgres
+[ ] Keep port: 5432
+[ ] Complete installation (wait 5-10 minutes)
+
+STEP 3: VERIFY INSTALLATION
+----------------------------
+[ ] Open new Command Prompt
+[ ] Run: psql --version
+[ ] Should show: psql (PostgreSQL) 16.x
+
+STEP 4: CREATE DATABASE
+----------------------------
+[ ] Open Command Prompt
+[ ] Run: psql -U postgres
+[ ] Enter password: postgres
+[ ] Run: CREATE DATABASE matchify;
+[ ] Run: \q (to exit)
+
+STEP 5: RUN MIGRATIONS
+----------------------------
+[ ] In Command Prompt, navigate to backend folder:
+    cd "C:\Users\pokka\AI Agent Suite\pathfinder-enhanced\backend"
+[ ] Run: node run_migration.js
+[ ] Should see: "All migrations completed successfully!"
+
+STEP 6: START MATCHIFY
+----------------------------
+[ ] Double-click: START_MATCHIFY.bat
+[ ] Wait for both backend and frontend to start
+[ ] Backend opens at: http://localhost:5000
+[ ] Frontend opens at: http://localhost:3000
+
+STEP 7: TEST THE APP
+----------------------------
+[ ] Open: http://localhost:5000/health
+    Should show: {"status":"healthy","database":"connected"}
+[ ] Open: http://localhost:3000
+    Should show: Matchify homepage
+[ ] Click "Get Started"
+[ ] Create a test account
+[ ] Login successfully
+
+========================================
+  TROUBLESHOOTING
+========================================
+
+If psql command not found:
+- Close and reopen Command Prompt
+- Or restart computer
+- PostgreSQL should be in PATH automatically
+
+If connection refused:
+- Check PostgreSQL service is running
+- Win + R → services.msc
+- Find "postgresql-x64-16" → Start
+
+If password error:
+- Check backend\.env file
+- Make sure password matches: postgres
+
+If migration fails:
+- Drop database: DROP DATABASE matchify;
+- Create again: CREATE DATABASE matchify;
+- Run migrations again
+
+========================================
+  HELPFUL COMMANDS
+========================================
+
+Check PostgreSQL version:
+  psql --version
+
+Connect to database:
+  psql -U postgres -d matchify
+
+List tables:
+  \dt
+
+View users:
+  SELECT * FROM users;
+
+Exit psql:
+  \q
+
+Start PostgreSQL service:
+  net start postgresql-x64-16
+
+Stop PostgreSQL service:
+  net stop postgresql-x64-16
+
+========================================
+  FILES TO REFERENCE
+========================================
+
+Detailed guide:
+  INSTALL_POSTGRESQL_WINDOWS.md
+
+Testing guide:
+  LOCAL_TESTING_GUIDE.md
+
+Troubleshooting:
+  See INSTALL_POSTGRESQL_WINDOWS.md
+
+========================================
+
+CURRENT STATUS: Waiting for PostgreSQL installation
+
+NEXT STEP: Download and install PostgreSQL from the browser window that just opened
+
+========================================

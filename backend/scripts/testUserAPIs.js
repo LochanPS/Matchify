@@ -44,7 +44,7 @@ async function testUserAPIs() {
     log('Test 2: API Info', 'yellow');
     try {
       const info = await axios.get(`${API_URL}/`);
-      if (info.data.message === 'Pathfinder Enhanced API') {
+      if (info.data.message === 'MATCHIFY API - Day 42 Optimized') {
         log('✅ API info passed', 'green');
         testsPassed++;
       } else {

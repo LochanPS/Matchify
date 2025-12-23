@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import { userAPI } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -22,10 +23,13 @@ const mockFirebaseAuth = {
     }
     
     return {
-      uid: 'mock-uid-' + Date.now(),
+      user_id: 'mock-uid-' + Date.now(),
       email,
       token: 'mock-jwt-token',
-      role
+      role,
+      name: email.split('@')[0],
+      city: null,
+      onboarded: false
     };
   },
   
@@ -39,10 +43,13 @@ const mockFirebaseAuth = {
     }
     
     return {
-      uid: 'mock-uid-existing',
+      user_id: 'mock-uid-existing',
       email,
       token: 'mock-jwt-token',
-      role: 'player' // Mock existing user role
+      role: 'player',
+      name: email.split('@')[0],
+      city: 'Bangalore',
+      onboarded: true
     };
   }
 };
@@ -50,6 +57,28 @@ const mockFirebaseAuth = {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Restore user from localStorage on mount
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Failed to restore user:', error);
+        localStorage.removeItem('user');
+      }
+    }
+  }, []);
+
+  // Save user to localStorage whenever it changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+  }, [user]);
 
   const signup = async (email, password, role) => {
     setLoading(true);
@@ -73,12 +102,38 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const completeProfile = async (profileData) => {
+    if (!user) {
+      throw new Error('No user logged in');
+    }
+
+    setLoading(true);
+    try {
+      // Call backend API to update profile
+      const updatedUser = await userAPI.updateProfile(user.user_id, {
+        city: profileData.city,
+      });
+
+      // Update local user state
+      const newUser = {
+        ...user,
+        city: profileData.city,
+        onboarded: true,
+      };
+      setUser(newUser);
+      return newUser;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
+    localStorage.removeItem('authToken');
   };
 
   return (
-    <AuthContext.Provider value={{ user, signup, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, signup, login, logout, completeProfile, loading }}>
       {children}
     </AuthContext.Provider>
   );

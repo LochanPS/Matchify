@@ -1,13 +1,16 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Users } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import InputField from '../../components/shared/InputField';
 import RoleSelector from '../../components/shared/RoleSelector';
+import ReferralSignup from '../../components/growth/ReferralSignup';
+import { referralAPI } from '../../services/api';
 
 const Signup = () => {
   const navigate = useNavigate();
   const { signup, loading } = useAuth();
+  const [searchParams] = useSearchParams();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -18,6 +21,16 @@ const Signup = () => {
   });
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
+  const [referralCode, setReferralCode] = useState('');
+  const [referralValidated, setReferralValidated] = useState(false);
+  
+  useEffect(() => {
+    // Check for referral code in URL
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      setReferralCode(refCode);
+    }
+  }, [searchParams]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -63,6 +76,21 @@ const Signup = () => {
     try {
       const userData = await signup(formData.email, formData.password, formData.role);
       
+      // Store token in localStorage
+      if (userData.token) {
+        localStorage.setItem('authToken', userData.token);
+      }
+      
+      // Apply referral code if present and validated
+      if (referralCode && referralValidated && userData.user_id) {
+        try {
+          await referralAPI.apply(referralCode, userData.user_id);
+        } catch (referralError) {
+          console.error('Failed to apply referral:', referralError);
+          // Don't block signup if referral fails
+        }
+      }
+      
       // Navigate based on role
       if (userData.role === 'player') {
         navigate('/onboarding');
@@ -72,6 +100,10 @@ const Signup = () => {
     } catch (error) {
       setApiError(error.message || 'Failed to create account');
     }
+  };
+  
+  const handleReferralValidated = (validationData) => {
+    setReferralValidated(true);
   };
 
   return (
@@ -83,11 +115,19 @@ const Signup = () => {
             <Users className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
-          <p className="text-gray-500">Join Pathfinder Enhanced today</p>
+          <p className="text-gray-500">Join MATCHIFY today</p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg p-6 space-y-5">
+          {/* Referral Code Display */}
+          {referralCode && (
+            <ReferralSignup 
+              referralCode={referralCode} 
+              onReferralValidated={handleReferralValidated}
+            />
+          )}
+          
           {apiError && (
             <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
               <p className="text-sm text-red-600">{apiError}</p>

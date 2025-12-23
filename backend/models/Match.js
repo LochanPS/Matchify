@@ -56,9 +56,11 @@ class Match extends BaseModel {
       SELECT 
         m.*,
         p1.full_name as player1_name,
-        p1.skill_level as player1_skill,
+        p1.matches_played as player1_matches,
+        p1.wins as player1_wins,
         p2.full_name as player2_name,
-        p2.skill_level as player2_skill,
+        p2.matches_played as player2_matches,
+        p2.wins as player2_wins,
         w.full_name as winner_name
       FROM matches m
       LEFT JOIN users p1 ON m.player1_id = p1.user_id
@@ -83,9 +85,11 @@ class Match extends BaseModel {
       SELECT 
         m.*,
         p1.full_name as player1_name,
-        p1.skill_level as player1_skill,
+        p1.matches_played as player1_matches,
+        p1.wins as player1_wins,
         p2.full_name as player2_name,
-        p2.skill_level as player2_skill,
+        p2.matches_played as player2_matches,
+        p2.wins as player2_wins,
         w.full_name as winner_name
       FROM matches m
       LEFT JOIN users p1 ON m.player1_id = p1.user_id
@@ -145,10 +149,12 @@ class Match extends BaseModel {
         m.*,
         p1.full_name as player1_name,
         p1.email as player1_email,
-        p1.skill_level as player1_skill,
+        p1.matches_played as player1_matches,
+        p1.wins as player1_wins,
         p2.full_name as player2_name,
         p2.email as player2_email,
-        p2.skill_level as player2_skill,
+        p2.matches_played as player2_matches,
+        p2.wins as player2_wins,
         w.full_name as winner_name,
         t.tournament_name,
         t.format
